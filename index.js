@@ -9,7 +9,7 @@ function list(items, onclick) {
     <h1>Things ToDo:</h1>
     <input type="text" id="todoVal">
     <button onclick=${onclick} class="button-secondary pure-button">Add Todo</button>
-    <ul>
+    <ul id="listNotDone">
       ${items.map(function (item) {
           if(item.status !== "done")
             return yo`<li id="${item.id}">${item.value}<button onclick=${isDone} class="button-secondary pure-button">Mark as done</button></li>`
@@ -19,7 +19,7 @@ function list(items, onclick) {
     <ul id="listDone">
     ${items.map(function (item) {
         if(item.status === "done")
-            return yo`<li id="${item.id}">${item.value}</li>`
+            return yo`<li id="${item.id}">${item.value}<button onclick=${isDone} class="button-secondary pure-button">Undo</button></li></li>`
         })}
     </ul>
   </div>`
@@ -37,27 +37,37 @@ function update() {
     yo.update(el, newList)
 }
 
-function pending(item) {
-    if (item.status === "pending") {
-        return yo`<li id="${item.id}">${item.value}<button onclick=${isDone} class="button-secondary pure-button">Mark as done</button></li>`
-    }
-}
-
 function isDone(ev) {
+    var pId = ev.target.parentNode.parentNode.getAttribute('id')
     var id = ev.target.parentNode.getAttribute('id')
-    toDos = toDos.filter(function (el, i) {
-        if (id !== el.id) {
-            return id
-        }
-        else {
-            el.status = 'done'
-            return id;
-        }
-    });
+    if(pId === 'listNotDone'){
+        toDos = toDos.filter(function (el, i) {
+            if (id !== el.id) {
+                return id
+            }
+            else {
+                el.status = 'done'
+                return id;
+            }
+        });    
+    }
+    else{
+        toDos = toDos.filter(function (el, i) {
+            if (id !== el.id) {
+                return id
+            }
+            else {
+                el.status = 'pending'
+                return id;
+            }
+        });    
+    }
+    
     ev.target.parentNode.remove();
     console.table(toDos);
     var newList = list(toDos, update)
     yo.update(el, newList)
 }
+
 
 document.body.appendChild(el)
