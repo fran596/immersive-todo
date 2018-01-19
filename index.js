@@ -1,4 +1,9 @@
 import uuidv1 from 'uuid'
+import EventEmitter from 'events'
+
+// we create an instance of EventEmitter to emit and
+// listen to events
+const bus = new EventEmitter
 var yo = require('yo-yo')
 
 var toDos = [] // start empty 
@@ -11,15 +16,17 @@ function list(items, onclick) {
     <button onclick=${onclick} class="button-secondary pure-button">Add Todo</button>
     <ul id="listNotDone">
       ${items.map(function (item) {
-            if (item.status !== "done")
-                return yo`<li id="${item.id}">${item.value}<button onclick=${isDone} class="button-secondary pure-button">Mark as done</button></li>`
+            if (item.status === "pending") {
+                return retItem(item)
+            }
         })}
     </ul>
     <h1>Done:</h1>
     <ul id="listDone">
     ${items.map(function (item) {
-            if (item.status === "done")
-                return yo`<li id="${item.id}">${item.value}<button onclick=${isDone} class="button-secondary pure-button">Undo</button></li></li>`
+            if (item.status === "done") {
+                return retItem(item)
+            }
         })}
     </ul>
   </div>`
@@ -35,6 +42,15 @@ function update() {
     // construct a new list and efficiently diff+morph it into the one in the DOM 
     var newList = list(toDos, update)
     yo.update(el, newList)
+}
+
+function retItem(item) {
+    if (item.status === "pending") {
+        return yo`<li id="${item.id}">${item.value}<button onclick=${isDone} class="button-secondary pure-button">Mark as done</button></li>`
+    }
+    else {
+        return yo`<li id="${item.id}">${item.value}<button onclick=${isDone} class="button-secondary pure-button">Undo</button></li></li>`
+    }
 }
 
 function isDone(ev) {
